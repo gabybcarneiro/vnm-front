@@ -1,0 +1,220 @@
+/* VidaNoMato — Responsive Web Layout */
+
+/* ── Global reset for web ── */
+html, body {
+  background: #EDE3CA;
+  height: 100%;
+  overflow-x: hidden;
+}
+
+/* ── Outer container ── */
+.layout-outer {
+  min-height: 100vh;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background: #EDE3CA;
+}
+
+/* ── Flex shell ── */
+.layout {
+  display: flex;
+  width: 100%;
+  min-height: 100vh;
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  display: none;
+  flex-direction: column;
+  width: 240px;
+  min-width: 240px;
+  background: #2A1F14;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.sidebar::-webkit-scrollbar { display: none; }
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 26px 20px 22px;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 6px;
+}
+.sidebar-brand .sb-emoji { font-size: 28px; line-height: 1; flex-shrink: 0; }
+.sidebar-brand .sb-name {
+  font-family: 'Instrument Serif', Georgia, serif;
+  font-size: 19px;
+  color: #E8B544;
+  line-height: 1.15;
+}
+.sidebar-brand .sb-sub {
+  font-size: 11px;
+  color: rgba(255,255,255,0.38);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.sidebar-section {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.28);
+  padding: 14px 20px 4px;
+}
+
+.sidebar-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 20px;
+  border: none;
+  background: none;
+  color: rgba(255,255,255,0.52);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  font-family: 'Manrope', system-ui, sans-serif;
+  transition: background 0.12s, color 0.12s;
+  position: relative;
+}
+.sidebar-item:hover {
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.82);
+}
+.sidebar-item.active {
+  background: rgba(194,105,58,0.16);
+  color: #E8B78A;
+}
+.sidebar-item.active::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 4px; bottom: 4px;
+  width: 3px;
+  background: #C2693A;
+  border-radius: 0 3px 3px 0;
+}
+.sb-ico { flex-shrink: 0; }
+
+.sidebar-div {
+  height: 1px;
+  background: rgba(255,255,255,0.07);
+  margin: 8px 16px;
+}
+
+.sidebar-foot {
+  margin-top: auto;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 8px 0;
+}
+
+/* ── Content area ── */
+.content-area {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  background: var(--bg);
+  display: flex;
+  flex-direction: column;
+}
+
+/* On web: app-body should NOT create its own scroll context */
+@media (min-width: 640px) {
+  .app-body {
+    overflow-y: visible !important;
+    overflow-x: visible !important;
+    padding-bottom: 32px !important;
+  }
+  .top-spacer { height: 0 !important; }
+  /* Sheet covers full viewport on web */
+  .sheet-backdrop { position: fixed; }
+  /* Toast pinned to viewport bottom-right on desktop */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    left: auto;
+    transform: none;
+  }
+}
+
+/* ── Mobile (< 640px) ── */
+@media (max-width: 639px) {
+  html, body { background: #1c1810; overflow: hidden; height: 100dvh; }
+  .layout-outer {
+    background: #1c1810;
+    padding: 0;
+    align-items: center;
+    min-height: 100dvh;
+  }
+  .layout { max-width: 430px; width: 100%; min-height: 100dvh; }
+  .content-area { min-height: 100dvh; }
+  .sidebar { display: none !important; }
+  .tabbar { display: flex; }
+  .top-spacer { height: 20px; }
+  .app-body { padding-bottom: 100px; }
+}
+
+/* ── Tablet (640px – 1023px): icon sidebar ── */
+@media (min-width: 640px) and (max-width: 1023px) {
+  html, body { overflow: hidden; height: 100vh; }
+  .layout-outer { height: 100vh; }
+  .layout { height: 100vh; }
+  .sidebar {
+    display: flex;
+    width: 66px;
+    min-width: 66px;
+  }
+  .sidebar-brand {
+    padding: 20px 0;
+    justify-content: center;
+    border-bottom-color: rgba(255,255,255,0.07);
+  }
+  .sidebar-brand .sb-emoji { font-size: 24px; }
+  .sidebar-brand .sb-names { display: none; }
+  .sidebar-item { padding: 12px 0; justify-content: center; gap: 0; }
+  .sidebar-item .sb-label { display: none; }
+  .sidebar-item.active::before { top: 6px; bottom: 6px; }
+  .sidebar-section, .sidebar-div + .sidebar-section { display: none; }
+  .sidebar-div { margin: 5px 10px; }
+  .sidebar-foot { padding: 6px 0; }
+  .content-area { overflow-y: auto; }
+  .tabbar { display: none !important; }
+}
+
+/* ── Desktop (≥ 1024px): full sidebar ── */
+@media (min-width: 1024px) {
+  html, body { overflow: hidden; height: 100vh; }
+  .layout-outer {
+    height: 100vh;
+    background: #D8C9A8;
+  }
+  .layout {
+    height: 100vh;
+    max-width: 1360px;
+    width: 100%;
+    box-shadow: 0 0 80px rgba(0,0,0,0.18), 0 0 2px rgba(0,0,0,0.08);
+  }
+  .sidebar { display: flex; }
+  .content-area { overflow-y: auto; }
+  .tabbar { display: none !important; }
+}
+
+/* ── Wide desktop: 2-col content ── */
+@media (min-width: 1280px) {
+  .wide-2col {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+}
