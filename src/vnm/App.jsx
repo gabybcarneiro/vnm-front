@@ -3,7 +3,7 @@ import { getSessao, onSessao, logout } from './api.js';
 import { FARM } from './data.js';
 import { Ico, Toast } from './ui.jsx';
 import { HomeScreen, AlertsScreen } from './screens-core.jsx';
-import { LoginScreen, RebanhoScreen, LoteDetailScreen, NovoLoteScreen } from './screens-lotes.jsx';
+import { LoginScreen, AnimaisScreen, LoteDetailScreen, NovoLoteScreen } from './screens-lotes.jsx';
 import { ProducaoScreen, SaudeScreen, MaisScreen, PastagensScreen, EstoqueScreen, FinanceiroScreen, CalendarioScreen, ReproducaoScreen, RelatoriosScreen } from './screens-more.jsx';
 import './styles.css';
 import './responsive.css';
@@ -13,7 +13,7 @@ import './responsive.css';
 // ─── Nav config ───
 const NAV_MAIN = [
   { k: "home",     l: "Início",    ico: <Ico.home/> },
-  { k: "rebanho",  l: "Animais",   ico: <Ico.herd/> },
+  { k: "animais",  l: "Animais",   ico: <Ico.herd/> },
   { k: "producao", l: "Produção",  ico: <Ico.production/> },
 ];
 const NAV_MGMT = [
@@ -80,7 +80,7 @@ function Sidebar({ screen, navigate }) {
 function TabBar({ activeTab, goTab }) {
   const tabs = [
     { k: "home",     l: "Início",   ico: <Ico.home/> },
-    { k: "rebanho",  l: "Animais",  ico: <Ico.herd/> },
+    { k: "animais",  l: "Animais",  ico: <Ico.herd/> },
     { k: "producao", l: "Produção", ico: <Ico.production/> },
     { k: "mais",     l: "Mais",     ico: <Ico.more/> },
   ];
@@ -118,7 +118,7 @@ function AppShell() {
   // Which tab is active (for mobile tabbar)
   const activeTab = (() => {
     if (["home","alerts","calendar"].includes(screen)) return "home";
-    if (["rebanho","loteDetail","novoLote"].includes(screen)) return "rebanho";
+    if (["animais","loteDetail","novoLote"].includes(screen)) return "animais";
     if (screen === "producao") return "producao";
     return "mais";
   })();
@@ -129,13 +129,13 @@ function AppShell() {
 
   // go() decides push vs navigate
   const ROOT_SCREENS = new Set([
-    "home","rebanho","producao","mais",
+    "home","animais","producao","mais",
     "saude","calendar","pastagens","estoque",
     "financeiro","reproducao","relatorios",
   ]);
   const go     = (s) => ROOT_SCREENS.has(s) ? navigate(s) : push(s);
   const goTab  = (t) => navigate(
-    t === "home" ? "home" : t === "rebanho" ? "rebanho" : t === "producao" ? "producao" : "mais"
+    t === "home" ? "home" : t === "animais" ? "animais" : t === "producao" ? "producao" : "mais"
   );
 
   const showToast = (msg) => {
@@ -151,13 +151,13 @@ function AppShell() {
     switch (screen) {
       case "home":         return <HomeScreen go={go} showToast={showToast}/>;
       case "alerts":       return <AlertsScreen go={go}/>;
-      case "rebanho":      return <RebanhoScreen
+      case "animais":      return <AnimaisScreen
                                    openLote={(l) => push("loteDetail", { codigo: l.codigo })}
                                    openAdd={() => push("novoLote")}/>;
       case "loteDetail":   return <LoteDetailScreen key={params.codigo} codigo={params.codigo} back={pop} showToast={showToast}/>;
       case "novoLote":     return <NovoLoteScreen back={pop} onCriado={(l) => {
                                    showToast(`Lote ${l.codigo} cadastrado`);
-                                   setStack([{ screen: "rebanho" }, { screen: "loteDetail", params: { codigo: l.codigo } }]);
+                                   setStack([{ screen: "animais" }, { screen: "loteDetail", params: { codigo: l.codigo } }]);
                                  }}/>;
       case "producao":     return <ProducaoScreen go={go} showToast={showToast}/>;
       case "saude":        return <SaudeScreen go={go} back={backTo("mais")} showToast={showToast}/>;

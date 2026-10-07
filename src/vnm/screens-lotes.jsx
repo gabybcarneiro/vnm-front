@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api, useApi, login, TIPOS, tipoInfo, MOTIVOS, hojeIso, dataBr, idadeDesde, nascimentoLote, sexosTexto } from './api.js';
 import { Ico, SpeciesAvatar, PageHeader, StatTile, Sheet, Empty } from './ui.jsx';
-// VidaNoMato — telas ligadas ao vnm-backend: Login, Rebanho (lotes), Detalhe do lote, Novo lote
+// VidaNoMato — telas ligadas ao vnm-backend: Login, Animais (lotes), Detalhe do lote, Novo lote
 
 
 // ────── Pequenos blocos compartilhados ──────
@@ -124,9 +124,9 @@ function LoginScreen() {
 }
 
 // ════════════════════════════════════════════
-// REBANHO (lotes)
+// ANIMAIS (lotes)
 // ════════════════════════════════════════════
-function RebanhoScreen({ openLote, openAdd }) {
+function AnimaisScreen({ openLote, openAdd }) {
   const [tipo, setTipo] = useState("");
   const [q, setQ] = useState("");
   const [encerrados, setEncerrados] = useState(false);
@@ -600,4 +600,4 @@ function NovoLoteScreen({ back, onCriado }) {
   );
 }
 
-export { LoginScreen, RebanhoScreen, LoteDetailScreen, NovoLoteScreen };
+export { LoginScreen, AnimaisScreen, LoteDetailScreen, NovoLoteScreen };
