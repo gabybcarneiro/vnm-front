@@ -1,6 +1,6 @@
 # vnm-front
 
-Front-end do **VidaNoMato**, app de administração do sítio: rebanho, produção, saúde, pastagens, estoque e financeiro. Funciona no celular (barra de abas) e no tablet/desktop (menu lateral).
+Front-end do **VidaNoMato**, app de administração do sítio: rebanho, produção, saúde, pastagens, estoque e financeiro. Funciona no celular (barra de abas) e no tablet/desktop (menu lateral), e pode ser instalado como aplicativo (PWA).
 
 Feito com React 19 e Vite 8. Conversa com o [vnm-backend](../vnm-backend) (Spring Boot) pela rota `/api`.
 
@@ -36,8 +36,21 @@ O primeiro usuário é criado pelo backend a partir de `VNM_ADMIN_LOGIN` e `VNM_
 |---|---|
 | `npm run dev` | Servidor de desenvolvimento na porta 3002, com proxy de `/api` para `localhost:8080` |
 | `npm run build` | Gera a versão de produção em `dist/` |
-| `npm run preview` | Serve o conteúdo de `dist/` localmente |
+| `npm run preview` | Serve o conteúdo de `dist/` na porta 4173, com o mesmo proxy de `/api` |
 | `npm run lint` | Roda o ESLint |
+
+## PWA
+
+O app é um Progressive Web App gerado pelo [vite-plugin-pwa](https://vite-pwa-org.netlify.app/) (Workbox):
+
+- **Instalação:** no Chrome/Edge (desktop e Android) aparece a opção "Instalar app". No iPhone, use Safari → Compartilhar → "Adicionar à Tela de Início".
+- **Service worker:** guarda a "casca" do app (HTML, JS, CSS, ícones) e as fontes do Google, então o app abre rápido e abre mesmo sem rede. As chamadas a `/api` **nunca** vêm do cache: sem conexão com o backend, as telas mostram erro de conexão.
+- **Atualização:** `registerType: 'autoUpdate'`. Uma versão nova é baixada em segundo plano e passa a valer na próxima abertura do app.
+- **Ícones:** em `public/`, com o trigo em creme sobre o terracota (`--terra`): `favicon.svg`, `pwa-192x192.png`, `pwa-512x512.png`, `maskable-icon-512x512.png` (com margem para recorte no Android) e `apple-touch-icon-180x180.png`.
+
+O service worker só existe no build de produção. Para testar a PWA, rode `npm run build && npm run preview` e abra http://localhost:4173. O `npm run dev` não registra service worker.
+
+Instalar a partir de outro aparelho exige HTTPS (o navegador só aceita service worker em `localhost` ou em HTTPS).
 
 ## Integração com o backend
 
