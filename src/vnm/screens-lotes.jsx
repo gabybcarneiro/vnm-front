@@ -142,7 +142,7 @@ function RebanhoScreen({ openLote, openAdd }) {
     <div>
       <div className="top-spacer"/>
       <PageHeader
-        title="Rebanho"
+        title="Animais"
         subtitle={resumo.data ? `${totalGeral} animais no sítio` : " "}
         action={
           <button onClick={openAdd} aria-label="Novo lote" style={{

@@ -59,10 +59,10 @@ O backend organiza os animais em **lotes** (código como `OV-001`, espécie, ra�
 **Ligado à API:**
 
 - **Login:** token JWT válido por 12h, guardado no navegador. Ao expirar ou receber 401, o app volta para a tela de login.
-- **Rebanho:** lista de lotes, totais por espécie (`/api/resumo`), busca por nome, filtro por espécie e opção de mostrar lotes encerrados.
+- **Animais:** lista de lotes, totais por espécie (`/api/resumo`), busca por nome, filtro por espécie e opção de mostrar lotes encerrados.
 - **Detalhe do lote:** ficha (raça, origem, data de nascimento, idade, quem cadastrou), histórico de movimentações e registro de entradas (compra/outro) e saídas (venda, morte, abate, outro).
 - **Novo lote:** cadastro em 3 passos, com raças carregadas da API e data de nascimento opcional.
-- **Início:** card "Rebanho" e saudação com o nome do usuário.
+- **Início:** card "Animais" e saudação com o nome do usuário.
 
 A data de nascimento é enviada como `idadeEstimada: { meses: 0, dataEstimativa: <data> }` e volta em `idade.dataNascimentoEstimada`. A idade (anos, meses e dias até hoje) é calculada no front.
 
@@ -78,7 +78,7 @@ src/
 └── vnm/
     ├── App.jsx             layout (menu lateral / abas), navegação e exigência de login
     ├── api.js              cliente da API, sessão, hook useApi e formatação (datas, idade, sexos)
-    ├── screens-lotes.jsx   Login, Rebanho, Detalhe do lote, Novo lote (ligadas à API)
+    ├── screens-lotes.jsx   Login, Animais, Detalhe do lote, Novo lote (ligadas à API)
     ├── screens-core.jsx    Início e Alertas
     ├── screens-more.jsx    Produção, Saúde, Mais, Pastagens, Estoque, Financeiro, Calendário, Reprodução, Relatórios
     ├── ui.jsx              ícones e componentes visuais (cards, gráficos, folha inferior etc.)

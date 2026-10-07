@@ -13,7 +13,7 @@ import './responsive.css';
 // ─── Nav config ───
 const NAV_MAIN = [
   { k: "home",     l: "Início",    ico: <Ico.home/> },
-  { k: "rebanho",  l: "Rebanho",   ico: <Ico.herd/> },
+  { k: "rebanho",  l: "Animais",   ico: <Ico.herd/> },
   { k: "producao", l: "Produção",  ico: <Ico.production/> },
 ];
 const NAV_MGMT = [
@@ -80,7 +80,7 @@ function Sidebar({ screen, navigate }) {
 function TabBar({ activeTab, goTab }) {
   const tabs = [
     { k: "home",     l: "Início",   ico: <Ico.home/> },
-    { k: "rebanho",  l: "Rebanho",  ico: <Ico.herd/> },
+    { k: "rebanho",  l: "Animais",  ico: <Ico.herd/> },
     { k: "producao", l: "Produção", ico: <Ico.production/> },
     { k: "mais",     l: "Mais",     ico: <Ico.more/> },
   ];

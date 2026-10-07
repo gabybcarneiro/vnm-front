@@ -177,7 +177,7 @@ function HomeScreen({ go, showToast }) {
       </div>
       <div className="spacer-12"/>
       <div style={{padding: "0 16px", display: "flex", gap: 10}}>
-        <StatTile label="Rebanho" value={totalAnimals} sub={resumo.erro ? "Não foi possível carregar" : resumo.data ? `${totalTipo("BOVINO")} bov · ${totalTipo("OVINO")} ov · ${totalTipo("GALINHA")} av` : "Carregando…"} tone="ink" icon={<Ico.herd s={14}/>} />
+        <StatTile label="Animais" value={totalAnimals} sub={resumo.erro ? "Não foi possível carregar" : resumo.data ? `${totalTipo("BOVINO")} bov · ${totalTipo("OVINO")} ov · ${totalTipo("GALINHA")} av` : "Carregando…"} tone="ink" icon={<Ico.herd s={14}/>} />
         <StatTile label="Saldo do mês" value={`R$ ${FIN_MES.saldo.toLocaleString('pt-BR')}`} sub={`Receita R$ ${FIN_MES.receita.toLocaleString('pt-BR')}`} tone="terra" icon={<Ico.money s={14}/>} />
       </div>
 
