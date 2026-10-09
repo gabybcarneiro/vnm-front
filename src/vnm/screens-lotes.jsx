@@ -137,6 +137,8 @@ function AnimaisScreen({ openLote, openAdd }) {
 
   const totalTipo = (t) => resumo.data?.find(r => r.tipo === t)?.total.total ?? 0;
   const totalGeral = TIPOS.reduce((s, t) => s + totalTipo(t.tipo), 0);
+  // só as espécies com animais no sítio viram filtro; se o resumo falhar, mostra todas
+  const tiposNoSitio = resumo.data ? TIPOS.filter(t => totalTipo(t.tipo) > 0) : resumo.erro ? TIPOS : [];
 
   return (
     <div>
@@ -154,8 +156,8 @@ function AnimaisScreen({ openLote, openAdd }) {
       />
 
       {/* Totais por espécie */}
-      <div style={{padding: "4px 16px 14px", display: "flex", gap: 8}}>
-        {TIPOS.map(s => (
+      {tiposNoSitio.length > 0 && <div style={{padding: "4px 16px 14px", display: "flex", gap: 8}}>
+        {tiposNoSitio.map(s => (
           <button key={s.tipo} onClick={() => setTipo(tipo === s.tipo ? "" : s.tipo)} className="card" style={{
             flex: 1, padding: "12px 10px", textAlign: "left",
             background: tipo === s.tipo ? "var(--ink)" : "var(--surface)",
@@ -167,7 +169,7 @@ function AnimaisScreen({ openLote, openAdd }) {
             <div style={{fontSize: 11, fontWeight: 600, opacity: tipo === s.tipo ? 0.7 : 0.6}}>{s.lbl}</div>
           </button>
         ))}
-      </div>
+      </div>}
 
       {/* Busca + filtro de encerrados */}
       <div style={{padding: "0 16px 10px", display: "flex", gap: 8}}>
@@ -189,9 +191,9 @@ function AnimaisScreen({ openLote, openAdd }) {
         }}><Ico.filter s={16}/></button>
       </div>
 
-      {/* Abas */}
-      <div style={{padding: "0 16px 8px", display: "flex", gap: 6, overflowX: "auto"}} className="no-scroll">
-        {[{tipo: "", lbl: "Todos"}, ...TIPOS].map(t => (
+      {/* Abas — com uma espécie só, "Todos" já mostra tudo e as abas não filtram nada */}
+      {(tiposNoSitio.length > 1 || encerrados) && <div style={{padding: "0 16px 8px", display: "flex", gap: 6, overflowX: "auto"}} className="no-scroll">
+        {tiposNoSitio.length > 1 && [{tipo: "", lbl: "Todos"}, ...tiposNoSitio].map(t => (
           <button key={t.tipo} onClick={() => setTipo(t.tipo)} className="chip" style={{
             background: tipo === t.tipo ? "var(--terra)" : "var(--surface)",
             color: tipo === t.tipo ? "#fff" : "var(--ink-2)",
@@ -200,7 +202,7 @@ function AnimaisScreen({ openLote, openAdd }) {
           }}>{t.lbl}</button>
         ))}
         {encerrados && <span className="chip solid" style={{flexShrink: 0}}>+ encerrados</span>}
-      </div>
+      </div>}
 
       {/* Lista de lotes */}
       <div style={{padding: "0 16px"}}>
