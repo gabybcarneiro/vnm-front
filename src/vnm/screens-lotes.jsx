@@ -240,13 +240,13 @@ function AnimaisScreen({ openLote, openAdd }) {
 // ════════════════════════════════════════════
 function LoteDetailScreen({ codigo, back, showToast }) {
   const [tab, setTab] = useState("info");
-  const [movSheet, setMovSheet] = useState(false);
+  const [sheet, setSheet] = useState(null); // null | "mov" | "morte"
   const lote = useApi(`lote:${codigo}`, () => api.lote(codigo));
   const movs = useApi(`movs:${codigo}`, () => api.movimentacoes(codigo));
 
   const aposMovimentacao = () => {
-    setMovSheet(false);
-    showToast("Movimentação registrada");
+    showToast(sheet === "morte" ? "Mortalidade registrada" : "Movimentação registrada");
+    setSheet(null);
     lote.recarregar();
     movs.recarregar();
   };
@@ -254,12 +254,17 @@ function LoteDetailScreen({ codigo, back, showToast }) {
   const l = lote.data;
   const info = l ? tipoInfo(l.tipo) : null;
   const nasc = l ? nascimentoLote(l.idade) : null;
+  // Início do lote = movimentação mais antiga; o backend recusa datas anteriores (feature 002)
+  const dataInicio = movs.data?.reduce((min, m) => (!min || m.dataOcorrencia < min ? m.dataOcorrencia : min), null);
 
   return (
     <div>
       <div className="top-spacer"/>
       <PageHeader title="" onBack={back} action={l && l.situacao === "ATIVO" && (
-        <button onClick={() => setMovSheet(true)} className="btn btn-soft" style={{padding: "8px 14px", fontSize: 13}}><Ico.plus s={14}/> Movimentar</button>
+        <div style={{display: "flex", gap: 8}}>
+          <button onClick={() => setSheet("morte")} className="btn btn-soft" style={{padding: "8px 14px", fontSize: 13, color: "var(--danger)"}}>Mortalidade</button>
+          <button onClick={() => setSheet("mov")} className="btn btn-soft" style={{padding: "8px 14px", fontSize: 13}}><Ico.plus s={14}/> Movimentar</button>
+        </div>
       )}/>
 
       <div style={{padding: "0 16px"}}>
@@ -283,6 +288,8 @@ function LoteDetailScreen({ codigo, back, showToast }) {
               <StatTile label="Quantidade" value={l.quantidades.total} unit={l.quantidades.total === 1 ? "animal" : "animais"} tone="ink"/>
               <StatTile label="Composição" value={sexosTexto(l.quantidades)} tone="terra"/>
             </div>
+
+            {l.balanco && <BalancoCard balanco={l.balanco} vivos={l.quantidades}/>}
           </div>
         )}
       </div>
@@ -339,12 +346,43 @@ function LoteDetailScreen({ codigo, back, showToast }) {
             )}
           </div>
 
-          <Sheet open={movSheet} onClose={() => setMovSheet(false)} title="Registrar movimentação">
-            <MovimentacaoForm lote={l} onSalvo={aposMovimentacao}/>
+          <Sheet open={!!sheet} onClose={() => setSheet(null)} title={sheet === "morte" ? "Registrar mortalidade" : "Registrar movimentação"}>
+            <MovimentacaoForm key={sheet} lote={l} dataInicio={dataInicio} mortalidade={sheet === "morte"} onSalvo={aposMovimentacao}/>
           </Sheet>
         </>
       )}
       <div className="spacer-24"/>
+    </div>
+  );
+}
+
+// Balanço do lote (feature 002, FR-008): totais do histórico, no total e por sexo
+function BalancoCard({ balanco, vivos }) {
+  const linhas = [
+    ["Entradas", balanco.entradas, "var(--moss-deep)"],
+    ["Mortes", balanco.mortes, "var(--danger)"],
+    ["Vendas", balanco.vendas, "var(--ink)"],
+    ["Abates", balanco.abates, "var(--ink)"],
+    ["Outras saídas", balanco.outrasSaidas, "var(--ink)"],
+  ];
+  return (
+    <div className="card" style={{padding: "4px 16px", marginTop: 10}}>
+      {linhas.map(([rotulo, q, cor]) => (
+        <div key={rotulo} style={{display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, padding: "10px 0", borderBottom: "1px solid var(--line-soft)", fontSize: 14}}>
+          <span style={{color: "var(--ink-3)", fontWeight: 600}}>{rotulo}</span>
+          <span style={{textAlign: "right"}}>
+            <b style={{color: q.total ? cor : "var(--ink-3)"}}>{q.total}</b>
+            {q.total > 0 && <span style={{fontSize: 12, color: "var(--ink-3)", marginLeft: 6}}>{sexosTexto(q)}</span>}
+          </span>
+        </div>
+      ))}
+      <div style={{display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, padding: "12px 0", fontSize: 15}}>
+        <span style={{fontWeight: 700}}>Vivos</span>
+        <span style={{textAlign: "right"}}>
+          <b>{vivos.total}</b>
+          {vivos.total > 0 && <span style={{fontSize: 12, color: "var(--ink-3)", marginLeft: 6}}>{sexosTexto(vivos)}</span>}
+        </span>
+      </div>
     </div>
   );
 }
@@ -384,9 +422,12 @@ const MOTIVOS_POR_TIPO = {
   SAIDA: ["MORTE", "VENDA", "ABATE", "OUTRO"],
 };
 
-function MovimentacaoForm({ lote, onSalvo }) {
+const MAX_OBSERVACOES = 500;
+
+// `mortalidade`: fixa SAIDA/MORTE e troca o campo de observações pela descrição do motivo da morte
+function MovimentacaoForm({ lote, dataInicio, mortalidade = false, onSalvo }) {
   const [tipo, setTipo] = useState("SAIDA");
-  const [motivo, setMotivo] = useState("VENDA");
+  const [motivo, setMotivo] = useState(mortalidade ? "MORTE" : "VENDA");
   const [data, setData] = useState(hojeIso());
   const [qtd, setQtd] = useState(QTD_ZERO);
   const [obs, setObs] = useState("");
@@ -413,19 +454,23 @@ function MovimentacaoForm({ lote, onSalvo }) {
 
   return (
     <div>
-      <div style={{display: "flex", justifyContent: "center", marginBottom: 16}}>
-        <div className="seg">
-          <button onClick={() => trocarTipo("SAIDA")} className={tipo === "SAIDA" ? "on" : ""}>Saída</button>
-          <button onClick={() => trocarTipo("ENTRADA")} className={tipo === "ENTRADA" ? "on" : ""}>Entrada</button>
-        </div>
-      </div>
+      {!mortalidade && (
+        <>
+          <div style={{display: "flex", justifyContent: "center", marginBottom: 16}}>
+            <div className="seg">
+              <button onClick={() => trocarTipo("SAIDA")} className={tipo === "SAIDA" ? "on" : ""}>Saída</button>
+              <button onClick={() => trocarTipo("ENTRADA")} className={tipo === "ENTRADA" ? "on" : ""}>Entrada</button>
+            </div>
+          </div>
+          <div className="field">
+            <label>Motivo</label>
+            <Chips opcoes={MOTIVOS_POR_TIPO[tipo].map(k => [k, MOTIVOS[k]])} valor={motivo} onChange={setMotivo}/>
+          </div>
+        </>
+      )}
       <div className="field">
-        <label>Motivo</label>
-        <Chips opcoes={MOTIVOS_POR_TIPO[tipo].map(k => [k, MOTIVOS[k]])} valor={motivo} onChange={setMotivo}/>
-      </div>
-      <div className="field">
-        <label>Data</label>
-        <input type="date" value={data} max={hojeIso()} onChange={e => setData(e.target.value)}/>
+        <label>{mortalidade ? "Data da morte" : "Data"}</label>
+        <input type="date" value={data} min={dataInicio || undefined} max={hojeIso()} onChange={e => setData(e.target.value)}/>
       </div>
       <div className="field">
         <label>Quantidade</label>
@@ -435,12 +480,16 @@ function MovimentacaoForm({ lote, onSalvo }) {
         )}
       </div>
       <div className="field">
-        <label>Observações (opcional)</label>
-        <textarea rows={2} value={obs} onChange={e => setObs(e.target.value)}/>
+        <label>{mortalidade ? "Descrição do motivo da morte (opcional)" : "Observações (opcional)"}</label>
+        <textarea rows={mortalidade ? 3 : 2} value={obs} maxLength={MAX_OBSERVACOES} onChange={e => setObs(e.target.value)}
+          placeholder={mortalidade ? "Ex.: ataque de predador, doença, frio…" : undefined}/>
+        {obs.length > MAX_OBSERVACOES - 50 && (
+          <div style={{fontSize: 12, color: "var(--ink-3)", textAlign: "right"}}>{obs.length}/{MAX_OBSERVACOES}</div>
+        )}
       </div>
       <ErroForm erro={erro}/>
       <button onClick={salvar} disabled={!total || enviando} className="btn btn-primary" style={{width: "100%", opacity: !total || enviando ? 0.4 : 1}}>
-        <Ico.check s={16} c="var(--bg)"/> {enviando ? "Salvando…" : `Registrar ${tipo === "SAIDA" ? "saída" : "entrada"} de ${total}`}
+        <Ico.check s={16} c="var(--bg)"/> {enviando ? "Salvando…" : mortalidade ? `Registrar ${total === 1 ? "1 morte" : `${total} mortes`}` : `Registrar ${tipo === "SAIDA" ? "saída" : "entrada"} de ${total}`}
       </button>
     </div>
   );
