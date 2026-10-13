@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { api, useApi, login, TIPOS, tipoInfo, MOTIVOS, hojeIso, dataBr, idadeDesde, nascimentoLote, sexosTexto } from './api.js';
+import { api, useApi, login, TIPOS, tipoInfo, MOTIVOS, FINALIDADES, finalidadesPorTipo, finalidadesTexto, hojeIso, dataBr, idadeDesde, nascimentoLote, sexosTexto } from './api.js';
 import { Ico, SpeciesAvatar, PageHeader, StatTile, Sheet, Empty } from './ui.jsx';
 // VidaNoMato — telas ligadas ao vnm-backend: Login, Animais (lotes), Detalhe do lote, Novo lote
 
@@ -73,6 +73,25 @@ function Chips({ opcoes, valor, onChange }) {
           borderColor: valor === k ? "var(--terra)" : "var(--line)",
         }}>{l}</button>
       ))}
+    </div>
+  );
+}
+
+// Seleção múltipla no mesmo estilo de Chips; `opcoes` = [[valor, rótulo], ...]
+function ChipsMulti({ opcoes, valores, onChange }) {
+  const alternar = (k) => onChange(valores.includes(k) ? valores.filter(v => v !== k) : [...valores, k]);
+  return (
+    <div style={{display: "flex", gap: 6, flexWrap: "wrap"}}>
+      {opcoes.map(([k, l]) => {
+        const on = valores.includes(k);
+        return (
+          <button key={k} type="button" onClick={() => alternar(k)} className="chip" aria-pressed={on} style={{
+            background: on ? "var(--terra)" : "var(--surface)",
+            color: on ? "#fff" : "var(--ink-2)",
+            borderColor: on ? "var(--terra)" : "var(--line)",
+          }}>{on && <Ico.check s={12} c="#fff"/>} {l}</button>
+        );
+      })}
     </div>
   );
 }
@@ -217,7 +236,7 @@ function AnimaisScreen({ openLote, openAdd }) {
                 <div className="meta">
                   <div className="t1">{l.nome || l.codigo}</div>
                   <div className="t2">
-                    {l.codigo} · {l.raca.nome} · {l.quantidades.total} {l.quantidades.total === 1 ? "animal" : "animais"}
+                    {l.codigo} · {l.raca.nome} · {l.quantidades.total} {l.quantidades.total === 1 ? "animal" : "animais"} · {finalidadesTexto(l.finalidades)}
                     {nascimentoLote(l.idade) && ` · ${nascimentoLote(l.idade).idade}`}
                   </div>
                 </div>
@@ -241,6 +260,7 @@ function AnimaisScreen({ openLote, openAdd }) {
 function LoteDetailScreen({ codigo, back, showToast }) {
   const [tab, setTab] = useState("info");
   const [sheet, setSheet] = useState(null); // null | "mov" | "morte"
+  const [finSheet, setFinSheet] = useState(false);
   const lote = useApi(`lote:${codigo}`, () => api.lote(codigo));
   const movs = useApi(`movs:${codigo}`, () => api.movimentacoes(codigo));
 
@@ -311,6 +331,14 @@ function LoteDetailScreen({ codigo, back, showToast }) {
                   ["Código", l.codigo],
                   ["Espécie", info.desc],
                   ["Raça", l.raca.nome],
+                  ["Finalidade", (
+                    <span style={{display: "inline-flex", alignItems: "center", gap: 8}}>
+                      {finalidadesTexto(l.finalidades)}
+                      <button onClick={() => setFinSheet(true)} className="btn btn-soft" style={{padding: "4px 10px", fontSize: 12}}>
+                        {l.finalidades?.length ? "Editar" : "Informar"}
+                      </button>
+                    </span>
+                  )],
                   ["Origem", {COMPRA: "Compra", OUTRO: "Outro", NASCIMENTO: "Nascimentos"}[l.origem] || l.origem],
                   ["Nascimento", nasc ? nasc.data : "Não informado"],
                   ["Idade", nasc ? nasc.idade : "—"],
@@ -346,12 +374,55 @@ function LoteDetailScreen({ codigo, back, showToast }) {
             )}
           </div>
 
+          <Sheet open={finSheet} onClose={() => setFinSheet(false)} title="Finalidade do lote">
+            {finSheet && <FinalidadesForm lote={l} onSalvo={() => {
+              setFinSheet(false);
+              showToast("Finalidade atualizada");
+              lote.recarregar();
+            }}/>}
+          </Sheet>
+
           <Sheet open={!!sheet} onClose={() => setSheet(null)} title={sheet === "morte" ? "Registrar mortalidade" : "Registrar movimentação"}>
             <MovimentacaoForm key={sheet} lote={l} dataInicio={dataInicio} mortalidade={sheet === "morte"} onSalvo={aposMovimentacao}/>
           </Sheet>
         </>
       )}
       <div className="spacer-24"/>
+    </div>
+  );
+}
+
+// Finalidades de um lote existente (feature 003, US3): pelo menos uma, válidas para o tipo
+function FinalidadesForm({ lote, onSalvo }) {
+  const [valores, setValores] = useState(lote.finalidades || []);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState(null);
+
+  const salvar = async () => {
+    setEnviando(true);
+    setErro(null);
+    try {
+      await api.editarLote(lote.codigo, { finalidades: valores }, lote.versao);
+      onSalvo();
+    } catch (err) {
+      setErro(err);
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <div>
+      <div className="field">
+        <label>Para que os animais são criados?</label>
+        <ChipsMulti opcoes={finalidadesPorTipo(lote.tipo).map(f => [f, FINALIDADES[f]])} valores={valores} onChange={setValores}/>
+        <div style={{fontSize: 12, color: "var(--ink-3)", marginTop: 6}}>
+          {valores.length ? "O lote aparece na Produção nas seções marcadas. Estimação não entra na Produção." : "Escolha pelo menos uma finalidade."}
+        </div>
+      </div>
+      <ErroForm erro={erro}/>
+      <button onClick={salvar} disabled={!valores.length || enviando} className="btn btn-primary" style={{width: "100%", opacity: !valores.length || enviando ? 0.4 : 1}}>
+        <Ico.check s={16} c="var(--bg)"/> {enviando ? "Salvando…" : "Salvar"}
+      </button>
     </div>
   );
 }
@@ -501,7 +572,7 @@ function MovimentacaoForm({ lote, dataInicio, mortalidade = false, onSalvo }) {
 function NovoLoteScreen({ back, onCriado }) {
   const [step, setStep] = useState(1);
   const [d, setD] = useState({
-    tipo: "", racaId: "", nome: "", origem: "COMPRA",
+    tipo: "", racaId: "", nome: "", origem: "COMPRA", finalidades: [],
     dataOcorrencia: hojeIso(), dataNascimento: "", observacoes: "",
   });
   const [qtd, setQtd] = useState(QTD_ZERO);
@@ -512,8 +583,11 @@ function NovoLoteScreen({ back, onCriado }) {
   const racas = useApi(`racas:${d.tipo}`, () => d.tipo ? api.racas(d.tipo) : Promise.resolve([]));
 
   const nascimentoInvalido = d.dataNascimento && d.dataOcorrencia && d.dataNascimento > d.dataOcorrencia;
-  const passo2Ok = d.racaId && d.dataOcorrencia && !nascimentoInvalido;
-  const escolherTipo = (t) => setD(x => ({...x, tipo: t, racaId: ""}));
+  const passo2Ok = d.racaId && d.finalidades.length > 0 && d.dataOcorrencia && !nascimentoInvalido;
+  // Ao trocar de espécie, descarta a raça e as finalidades que não valem para a nova
+  const escolherTipo = (t) => setD(x => ({
+    ...x, tipo: t, racaId: "", finalidades: x.finalidades.filter(f => finalidadesPorTipo(t).includes(f)),
+  }));
   const total = somaQtd(qtd);
 
   const submit = async () => {
@@ -524,7 +598,7 @@ function NovoLoteScreen({ back, onCriado }) {
     try {
       const lote = await api.criarLote({
         tipo: d.tipo, racaId: d.racaId, origem: d.origem,
-        dataOcorrencia: d.dataOcorrencia, quantidades: qtd,
+        dataOcorrencia: d.dataOcorrencia, quantidades: qtd, finalidades: d.finalidades,
         idadeEstimada: idade,
         nome: d.nome.trim() || undefined,
         observacoes: d.observacoes.trim() || undefined,
@@ -594,6 +668,14 @@ function NovoLoteScreen({ back, onCriado }) {
               )}
             </div>
             <div className="field">
+              <label>Finalidade</label>
+              <ChipsMulti opcoes={finalidadesPorTipo(d.tipo).map(f => [f, FINALIDADES[f]])}
+                valores={d.finalidades} onChange={v => set("finalidades", v)}/>
+              <div style={{fontSize: 12, color: "var(--ink-3)", marginTop: 6}}>
+                {d.finalidades.length ? "Pode marcar mais de uma." : "Escolha pelo menos uma finalidade."}
+              </div>
+            </div>
+            <div className="field">
               <label>Origem</label>
               <Chips opcoes={[["COMPRA", "Compra"], ["OUTRO", "Outro"]]} valor={d.origem} onChange={v => set("origem", v)}/>
             </div>
@@ -651,4 +733,4 @@ function NovoLoteScreen({ back, onCriado }) {
   );
 }
 
-export { LoginScreen, AnimaisScreen, LoteDetailScreen, NovoLoteScreen };
+export { LoginScreen, AnimaisScreen, LoteDetailScreen, NovoLoteScreen, Carregando, ErroCarga, ErroForm, ChipsMulti };

@@ -89,10 +89,6 @@ const EGG_DAYS = [
   { d: "Seg", v: 158 }, { d: "Ter", v: 162 }, { d: "Qua", v: 149 },
   { d: "Qui", v: 155 }, { d: "Sex", v: 142 }, { d: "Sáb", v: 138 }, { d: "Hoje", v: 145 },
 ];
-const MILK_DAYS = [
-  { d: "Seg", v: 41 }, { d: "Ter", v: 39 }, { d: "Qua", v: 40 },
-  { d: "Qui", v: 38 }, { d: "Sex", v: 37 }, { d: "Sáb", v: 36 }, { d: "Hoje", v: 38 },
-];
 
 // ───── Saúde / Vacinas ─────
 const VACINAS = [
@@ -161,5 +157,5 @@ const REPRODUCAO = [
 ];
 
 export {
-  FARM, WEATHER, CATTLE, CATTLE_COUNT, SHEEP, SHEEP_COUNT, POULTRY, POULTRY_COUNT, TASKS_TODAY, ALERTS, EGG_DAYS, MILK_DAYS, VACINAS, PASTAGENS, ESTOQUE, FIN_MES, FIN_RECENTES, FIN_CATS, REPRODUCAO,
+  FARM, WEATHER, CATTLE, CATTLE_COUNT, SHEEP, SHEEP_COUNT, POULTRY, POULTRY_COUNT, TASKS_TODAY, ALERTS, EGG_DAYS, VACINAS, PASTAGENS, ESTOQUE, FIN_MES, FIN_RECENTES, FIN_CATS, REPRODUCAO,
 };

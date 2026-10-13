@@ -37,7 +37,7 @@ class ApiError extends Error {
   }
 }
 
-async function request(method, path, { body, query, idempotente } = {}) {
+async function request(method, path, { body, query, idempotente, ifMatch } = {}) {
   const url = new URL(path, window.location.origin);
   Object.entries(query || {}).forEach(([k, v]) => {
     if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, v);
@@ -46,6 +46,7 @@ async function request(method, path, { body, query, idempotente } = {}) {
   if (body !== undefined) headers["Content-Type"] = "application/json";
   if (sessao) headers.Authorization = `Bearer ${sessao.token}`;
   if (idempotente) headers["Idempotency-Key"] = crypto.randomUUID();
+  if (ifMatch !== undefined) headers["If-Match"] = `"${ifMatch}"`;
 
   let res;
   try {
@@ -78,6 +79,17 @@ const api = {
   movimentacoes: (codigo) => request("GET", `/api/lotes/${encodeURIComponent(codigo)}/movimentacoes`),
   registrarMovimentacao: (codigo, dados) =>
     request("POST", `/api/lotes/${encodeURIComponent(codigo)}/movimentacoes`, { body: dados, idempotente: true }),
+  editarLote: (codigo, dados, versao) =>
+    request("PATCH", `/api/lotes/${encodeURIComponent(codigo)}`, { body: dados, ifMatch: versao }),
+
+  // Produção (feature 003)
+  producao: (ate) => request("GET", "/api/producao", { query: { ate } }),
+  lancamentos: (codigo, tipo) => request("GET", `/api/lotes/${encodeURIComponent(codigo)}/producao`, { query: { tipo } }),
+  registrarLancamento: (codigo, dados) =>
+    request("POST", `/api/lotes/${encodeURIComponent(codigo)}/producao`, { body: dados, idempotente: true }),
+  corrigirLancamento: (codigo, id, dados) =>
+    request("PUT", `/api/lotes/${encodeURIComponent(codigo)}/producao/${id}`, { body: dados, idempotente: true }),
+  excluirLancamento: (codigo, id) => request("DELETE", `/api/lotes/${encodeURIComponent(codigo)}/producao/${id}`),
 };
 
 // Carrega dados da API; `chave` identifica a consulta e dispara um novo carregamento quando muda
@@ -119,6 +131,11 @@ const MOTIVOS = {
   NASCIMENTO: "Nascimento", COMPRA: "Compra", MORTE: "Morte",
   VENDA: "Venda", ABATE: "Abate", OUTRO: "Outro",
 };
+
+// Finalidades do lote (feature 003). Galinha não tem leite; ovino e gado não têm ovos.
+const FINALIDADES = { OVOS: "Ovos", LEITE: "Leite", CORTE: "Corte", ESTIMACAO: "Estimação" };
+const finalidadesPorTipo = (tipo) => tipo === "GALINHA" ? ["OVOS", "CORTE", "ESTIMACAO"] : ["LEITE", "CORTE", "ESTIMACAO"];
+const finalidadesTexto = (lista) => (lista || []).map(f => FINALIDADES[f] || f).join(" · ") || "Não informada";
 
 // Data local no formato ISO (yyyy-mm-dd), sem conversão para UTC
 function hojeIso() {
@@ -178,5 +195,5 @@ function sexosTexto(q) {
 
 export {
   api, ApiError, useApi, login, logout, getSessao, onSessao,
-  TIPOS, tipoInfo, MOTIVOS, hojeIso, dataBr, idadeDesde, nascimentoLote, sexosTexto,
+  TIPOS, tipoInfo, MOTIVOS, FINALIDADES, finalidadesPorTipo, finalidadesTexto, hojeIso, dataBr, idadeDesde, nascimentoLote, sexosTexto,
 };

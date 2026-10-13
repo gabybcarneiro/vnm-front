@@ -4,7 +4,8 @@ import { FARM } from './data.js';
 import { Ico, Toast } from './ui.jsx';
 import { HomeScreen, AlertsScreen } from './screens-core.jsx';
 import { LoginScreen, AnimaisScreen, LoteDetailScreen, NovoLoteScreen } from './screens-lotes.jsx';
-import { ProducaoScreen, SaudeScreen, MaisScreen, PastagensScreen, EstoqueScreen, FinanceiroScreen, CalendarioScreen, ReproducaoScreen, RelatoriosScreen } from './screens-more.jsx';
+import { ProducaoScreen } from './screens-producao.jsx';
+import { SaudeScreen, MaisScreen, PastagensScreen, EstoqueScreen, FinanceiroScreen, CalendarioScreen, ReproducaoScreen, RelatoriosScreen } from './screens-more.jsx';
 import './styles.css';
 import './responsive.css';
 // VidaNoMato — App root · responsive shell (sidebar + tabbar)
@@ -159,7 +160,9 @@ function AppShell() {
                                    showToast(`Lote ${l.codigo} cadastrado`);
                                    setStack([{ screen: "animais" }, { screen: "loteDetail", params: { codigo: l.codigo } }]);
                                  }}/>;
-      case "producao":     return <ProducaoScreen go={go} showToast={showToast}/>;
+      case "producao":     return <ProducaoScreen showToast={showToast}
+                                   openLote={(l) => push("loteDetail", { codigo: l.codigo })}
+                                   openAdd={() => push("novoLote")}/>;
       case "saude":        return <SaudeScreen go={go} back={backTo("mais")} showToast={showToast}/>;
       case "mais":         return <MaisScreen go={go} onSair={logout}/>;
       case "pastagens":    return <PastagensScreen back={backTo("mais")} showToast={showToast}/>;

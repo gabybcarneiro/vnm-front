@@ -139,7 +139,7 @@ function Sparkline({ data, color = "var(--terra)", fill = true, height = 60 }) {
 
 // ───── Bar chart (simple) ─────
 function BarChart({ data, color = "var(--terra)", height = 120, valSuffix = "" }) {
-  const max = Math.max(...data.map(d => d.v));
+  const max = Math.max(1, ...data.map(d => d.v)); // semana zerada não pode virar divisão por zero
   return (
     <div style={{display: "flex", alignItems: "flex-end", gap: 8, height, padding: "0 4px"}}>
       {data.map((d, i) => {
