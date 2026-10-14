@@ -5,7 +5,9 @@ import { Ico, Toast } from './ui.jsx';
 import { HomeScreen, AlertsScreen } from './screens-core.jsx';
 import { LoginScreen, AnimaisScreen, LoteDetailScreen, NovoLoteScreen } from './screens-lotes.jsx';
 import { ProducaoScreen } from './screens-producao.jsx';
-import { SaudeScreen, MaisScreen, PastagensScreen, EstoqueScreen, FinanceiroScreen, CalendarioScreen, ReproducaoScreen, RelatoriosScreen } from './screens-more.jsx';
+import { SaudeScreen, ProtocoloScreen } from './screens-saude.jsx';
+import { NascimentoScreen, NascimentosSemLoteScreen } from './screens-nascimentos.jsx';
+import { MaisScreen, PastagensScreen, EstoqueScreen, FinanceiroScreen, CalendarioScreen, ReproducaoScreen, RelatoriosScreen } from './screens-more.jsx';
 import './styles.css';
 import './responsive.css';
 // VidaNoMato — App root · responsive shell (sidebar + tabbar)
@@ -119,7 +121,7 @@ function AppShell() {
   // Which tab is active (for mobile tabbar)
   const activeTab = (() => {
     if (["home","alerts","calendar"].includes(screen)) return "home";
-    if (["animais","loteDetail","novoLote"].includes(screen)) return "animais";
+    if (["animais","loteDetail","novoLote","nascimento","nascimentosSemLote"].includes(screen)) return "animais";
     if (screen === "producao") return "producao";
     return "mais";
   })();
@@ -154,7 +156,13 @@ function AppShell() {
       case "alerts":       return <AlertsScreen go={go}/>;
       case "animais":      return <AnimaisScreen
                                    openLote={(l) => push("loteDetail", { codigo: l.codigo })}
-                                   openAdd={() => push("novoLote")}/>;
+                                   openAdd={() => push("novoLote")}
+                                   openNascimento={() => push("nascimento")}
+                                   openNascimentosSemLote={() => push("nascimentosSemLote")}/>;
+      case "nascimento":   return <NascimentoScreen back={pop} onSalvo={(msg) => { showToast(msg); setStack(st => [...st.slice(0, -1), { screen: "nascimentosSemLote" }]); }}/>;
+      case "nascimentosSemLote": return <NascimentosSemLoteScreen back={pop} showToast={showToast}
+                                   openNovo={() => push("nascimento")}
+                                   openLote={(l) => push("loteDetail", { codigo: l.codigo })}/>;
       case "loteDetail":   return <LoteDetailScreen key={params.codigo} codigo={params.codigo} back={pop} showToast={showToast}/>;
       case "novoLote":     return <NovoLoteScreen back={pop} onCriado={(l) => {
                                    showToast(`Lote ${l.codigo} cadastrado`);
@@ -163,7 +171,10 @@ function AppShell() {
       case "producao":     return <ProducaoScreen showToast={showToast}
                                    openLote={(l) => push("loteDetail", { codigo: l.codigo })}
                                    openAdd={() => push("novoLote")}/>;
-      case "saude":        return <SaudeScreen go={go} back={backTo("mais")} showToast={showToast}/>;
+      case "saude":        return <SaudeScreen back={backTo("mais")} showToast={showToast}
+                                   openLote={(l) => push("loteDetail", { codigo: l.codigo })}
+                                   openProtocolo={() => push("protocolo")}/>;
+      case "protocolo":    return <ProtocoloScreen back={pop} showToast={showToast}/>;
       case "mais":         return <MaisScreen go={go} onSair={logout}/>;
       case "pastagens":    return <PastagensScreen back={backTo("mais")} showToast={showToast}/>;
       case "estoque":      return <EstoqueScreen back={backTo("mais")} showToast={showToast}/>;
@@ -176,7 +187,7 @@ function AppShell() {
   };
 
   // Hide tabbar while in the new-lot form (full-screen flow)
-  const showTabbar = screen !== "novoLote";
+  const showTabbar = !["novoLote", "nascimento"].includes(screen);
 
   return (
     <div className="layout-outer">

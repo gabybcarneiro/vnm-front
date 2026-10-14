@@ -90,18 +90,6 @@ const EGG_DAYS = [
   { d: "Qui", v: 155 }, { d: "Sex", v: 142 }, { d: "Sáb", v: 138 }, { d: "Hoje", v: 145 },
 ];
 
-// ───── Saúde / Vacinas ─────
-const VACINAS = [
-  { id: "v1", animal: "Estrela", especie: "Bovino", vacina: "Aftosa (reforço)", data: "Hoje", status: "pendente", urgente: true },
-  { id: "v2", animal: "Mimosa", especie: "Bovino", vacina: "Brucelose", data: "28/05/2026", status: "agendada" },
-  { id: "v3", animal: "Lote C — Pintinhos", especie: "Aves", vacina: "Newcastle", data: "30/05/2026", status: "agendada" },
-  { id: "v4", animal: "Pipoca", especie: "Ovino", vacina: "Clostridiose", data: "02/06/2026", status: "agendada" },
-  { id: "v5", animal: "Bartolomeu", especie: "Bovino", vacina: "Aftosa", data: "10/05/2026", status: "aplicada" },
-  { id: "v6", animal: "Lote A — Caipiras", especie: "Aves", vacina: "Vermifugação", data: "05/05/2026", status: "aplicada" },
-  { id: "v7", animal: "Carneirão", especie: "Ovino", vacina: "Raiva", data: "01/05/2026", status: "aplicada" },
-  { id: "v8", animal: "Florzinha", especie: "Bovino", vacina: "Carbúnculo", data: "15/06/2026", status: "agendada" },
-];
-
 // ───── Pastagens ─────
 const PASTAGENS = [
   { id: "pa1", nome: "Piquete 1", area: "2,4 ha", capim: "Brachiaria", status: "Descanso", dias: 18, cap: 60, ocupacao: 0 },
@@ -157,5 +145,5 @@ const REPRODUCAO = [
 ];
 
 export {
-  FARM, WEATHER, CATTLE, CATTLE_COUNT, SHEEP, SHEEP_COUNT, POULTRY, POULTRY_COUNT, TASKS_TODAY, ALERTS, EGG_DAYS, VACINAS, PASTAGENS, ESTOQUE, FIN_MES, FIN_RECENTES, FIN_CATS, REPRODUCAO,
+  FARM, WEATHER, CATTLE, CATTLE_COUNT, SHEEP, SHEEP_COUNT, POULTRY, POULTRY_COUNT, TASKS_TODAY, ALERTS, EGG_DAYS, PASTAGENS, ESTOQUE, FIN_MES, FIN_RECENTES, FIN_CATS, REPRODUCAO,
 };

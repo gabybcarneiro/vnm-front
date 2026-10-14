@@ -1,112 +1,8 @@
 import { useState } from 'react';
-import { FARM, CATTLE, SHEEP, TASKS_TODAY, VACINAS, PASTAGENS, ESTOQUE, FIN_MES, FIN_RECENTES, FIN_CATS, REPRODUCAO } from './data.js';
-import { Ico, SpeciesAvatar, PageHeader, StatTile, Sheet, Donut, Empty } from './ui.jsx';
+import { FARM, TASKS_TODAY, PASTAGENS, ESTOQUE, FIN_MES, FIN_RECENTES, FIN_CATS, REPRODUCAO } from './data.js';
+import { Ico, SpeciesAvatar, PageHeader, StatTile, Sheet, Donut } from './ui.jsx';
 // VidaNoMato — screens: Saúde, Mais menu, Pastagens, Estoque, Financeiro, Calendário, Relatórios
 
-
-// ════════════════════════════════════════════
-// SAÚDE
-// ════════════════════════════════════════════
-function SaudeScreen({ back, showToast }) {
-  const [tab, setTab] = useState("pendente"); // pendente | aplicada
-  const [addOpen, setAddOpen] = useState(false);
-
-  const filt = VACINAS.filter(v => tab === "pendente" ? v.status !== "aplicada" : v.status === "aplicada");
-
-  return (
-    <div>
-      <div className="top-spacer"/>
-      <PageHeader
-        title="Saúde"
-        subtitle={`${VACINAS.filter(v=>v.status!=="aplicada").length} vacinas agendadas`}
-        onBack={back}
-        action={
-          <button onClick={() => setAddOpen(true)} style={{
-            width: 40, height: 40, borderRadius: 999,
-            background: "var(--ink)", color: "var(--bg)", border: "none",
-            display: "flex", alignItems: "center", justifyContent: "center",
-          }}><Ico.plus s={20} c="var(--bg)"/></button>
-        }
-      />
-
-      {/* Stats row */}
-      <div style={{padding: "0 16px 14px", display: "flex", gap: 10}}>
-        <StatTile label="Hoje" value="1" sub="urgente" tone="terra" icon={<Ico.alert s={12} c="var(--terra)"/>}/>
-        <StatTile label="Esta semana" value="3" sub="vacinas" tone="ink" icon={<Ico.calendar s={12}/>}/>
-        <StatTile label="Em dia" value="98%" sub="do rebanho" tone="moss" icon={<Ico.check s={12} c="var(--moss)"/>}/>
-      </div>
-
-      <div style={{padding: "0 16px 10px", display: "flex", justifyContent: "center"}}>
-        <div className="seg">
-          <button onClick={() => setTab("pendente")} className={tab === "pendente" ? "on" : ""}>A aplicar</button>
-          <button onClick={() => setTab("aplicada")} className={tab === "aplicada" ? "on" : ""}>Histórico</button>
-        </div>
-      </div>
-
-      <div style={{padding: "0 16px"}}>
-        <div className="card" style={{padding: "4px 16px"}}>
-          {filt.length === 0 ? (
-            <Empty title="Tudo em dia" sub="Não há vacinas pendentes."/>
-          ) : filt.map((v) => {
-            return (
-              <div key={v.id} className="list-row" style={{padding: "14px 0"}}>
-                <div style={{
-                  width: 44, height: 44, borderRadius: 12,
-                  background: v.urgente ? "var(--danger-soft)" : "var(--terra-soft)",
-                  color: v.urgente ? "var(--danger)" : "var(--terra-deep)",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  flexShrink: 0,
-                }}><Ico.vaccine s={20}/></div>
-                <div className="meta">
-                  <div className="t1">{v.vacina}</div>
-                  <div className="t2">{v.animal} · {v.especie}</div>
-                </div>
-                <div style={{display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4}}>
-                  <span style={{
-                    fontSize: 12, fontWeight: 700,
-                    color: v.urgente ? "var(--danger)" : "var(--ink-2)",
-                  }}>{v.data}</span>
-                  {tab === "pendente" && (
-                    <button onClick={() => showToast(`${v.vacina} aplicada em ${v.animal}`)} className="chip moss" style={{
-                      padding: "4px 10px", fontSize: 11, border: "none", cursor: "pointer"
-                    }}>Aplicar</button>
-                  )}
-                  {tab === "aplicada" && (
-                    <span className="chip moss" style={{padding: "2px 8px", fontSize: 10}}><Ico.check s={10}/> Aplicada</span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      <Sheet open={addOpen} onClose={() => setAddOpen(false)} title="Nova aplicação">
-        <div className="field">
-          <label>Animal / lote</label>
-          <select><option>Selecione...</option>{CATTLE.concat(SHEEP).map(a => <option key={a.id}>{a.nome}</option>)}</select>
-        </div>
-        <div className="field">
-          <label>Tipo</label>
-          <div style={{display: "flex", gap: 6, flexWrap: "wrap"}}>
-            {["Vacina", "Vermífugo", "Antibiótico", "Vitamina"].map(t => (
-              <button key={t} className="chip">{t}</button>
-            ))}
-          </div>
-        </div>
-        <div className="field"><label>Produto / vacina</label><input placeholder="Ex.: Aftosa"/></div>
-        <div style={{display: "flex", gap: 8}}>
-          <div className="field" style={{flex: 1}}><label>Data</label><input placeholder="25/05/2026"/></div>
-          <div className="field" style={{flex: 1}}><label>Dose</label><input placeholder="5 mL"/></div>
-        </div>
-        <button onClick={() => { setAddOpen(false); showToast("Aplicação registrada"); }} className="btn btn-primary" style={{width: "100%"}}>
-          <Ico.check s={16} c="var(--bg)"/> Salvar
-        </button>
-      </Sheet>
-      <div className="spacer-24"/>
-    </div>
-  );
-}
 
 // ════════════════════════════════════════════
 // MAIS (menu)
@@ -658,5 +554,5 @@ function RelatoriosScreen({ back, showToast }) {
 }
 
 export {
-  SaudeScreen, MaisScreen, PastagensScreen, EstoqueScreen, FinanceiroScreen, CalendarioScreen, ReproducaoScreen, RelatoriosScreen,
+  MaisScreen, PastagensScreen, EstoqueScreen, FinanceiroScreen, CalendarioScreen, ReproducaoScreen, RelatoriosScreen,
 };

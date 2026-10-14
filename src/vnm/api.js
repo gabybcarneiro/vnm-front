@@ -90,6 +90,36 @@ const api = {
   corrigirLancamento: (codigo, id, dados) =>
     request("PUT", `/api/lotes/${encodeURIComponent(codigo)}/producao/${id}`, { body: dados, idempotente: true }),
   excluirLancamento: (codigo, id) => request("DELETE", `/api/lotes/${encodeURIComponent(codigo)}/producao/${id}`),
+
+  // Nascimentos (001; calendário na feature 004)
+  nascimentos: (filtros) => request("GET", "/api/nascimentos", { query: filtros }),
+  registrarNascimento: (dados) => request("POST", "/api/nascimentos", { body: dados, idempotente: true }),
+  criarLoteDeNascimentos: (dados) => request("POST", "/api/lotes/a-partir-de-nascimentos", { body: dados, idempotente: true }),
+
+  // Saúde (feature 004)
+  saudeResumo: () => request("GET", "/api/saude/resumo"),
+  aplicacoes: (filtros) => request("GET", "/api/saude/aplicacoes", { query: filtros }),
+  registrarAplicacao: (dados) => request("POST", "/api/saude/aplicacoes", { body: dados, idempotente: true }),
+  corrigirAplicacao: (id, dados) => request("PUT", `/api/saude/aplicacoes/${id}`, { body: dados, idempotente: true }),
+  excluirAplicacao: (id) => request("DELETE", `/api/saude/aplicacoes/${id}`),
+  previstas: (filtros) => request("GET", "/api/saude/previstas", { query: filtros }),
+  agendar: (dados) => request("POST", "/api/saude/previstas", { body: dados, idempotente: true }),
+  adiarPrevista: (id, dataPrevista) => request("PATCH", `/api/saude/previstas/${id}`, { body: { dataPrevista } }),
+  cancelarPrevista: (id) => request("DELETE", `/api/saude/previstas/${id}`),
+  confirmarPrevista: (id, dados) => request("POST", `/api/saude/previstas/${id}/confirmacao`, { body: dados, idempotente: true }),
+  recorrencias: (filtros) => request("GET", "/api/saude/recorrencias", { query: filtros }),
+  encerrarRecorrencia: (id) => request("POST", `/api/saude/recorrencias/${id}/encerramento`),
+  sugestoes: (filtros) => request("GET", "/api/saude/sugestoes", { query: filtros }),
+  aceitarSugestao: (dados) => request("POST", "/api/saude/sugestoes/aceite", { body: dados, idempotente: true }),
+  dispensarSugestao: (dados) => request("POST", "/api/saude/sugestoes/dispensadas", { body: dados }),
+  dispensadas: (filtros) => request("GET", "/api/saude/sugestoes/dispensadas", { query: filtros }),
+  reverterDispensa: (loteCodigo, itemProtocoloId) =>
+    request("DELETE", "/api/saude/sugestoes/dispensadas", { query: { loteCodigo, itemProtocoloId } }),
+  calendarioSugerido: (params) => request("GET", "/api/saude/calendario-sugerido", { query: params }),
+  protocolo: (tipo) => request("GET", "/api/saude/protocolo", { query: { tipo } }),
+  incluirItemProtocolo: (dados) => request("POST", "/api/saude/protocolo", { body: dados }),
+  alterarItemProtocolo: (id, dados) => request("PUT", `/api/saude/protocolo/${id}`, { body: dados }),
+  restaurarItemProtocolo: (id) => request("POST", `/api/saude/protocolo/${id}/restauracao`),
 };
 
 // Carrega dados da API; `chave` identifica a consulta e dispara um novo carregamento quando muda
@@ -136,6 +166,15 @@ const MOTIVOS = {
 const FINALIDADES = { OVOS: "Ovos", LEITE: "Leite", CORTE: "Corte", ESTIMACAO: "Estimação" };
 const finalidadesPorTipo = (tipo) => tipo === "GALINHA" ? ["OVOS", "CORTE", "ESTIMACAO"] : ["LEITE", "CORTE", "ESTIMACAO"];
 const finalidadesTexto = (lista) => (lista || []).map(f => FINALIDADES[f] || f).join(" · ") || "Não informada";
+
+// Saúde (feature 004)
+const TIPOS_APLICACAO = { VACINA: "Vacina", VERMIFUGO: "Vermífugo", MEDICACAO: "Medicação", VITAMINA: "Vitamina", OUTRO: "Outro" };
+const UNIDADES = { DIAS: "dias", SEMANAS: "semanas", MESES: "meses" };
+const UNIDADES_SINGULAR = { DIAS: "dia", SEMANAS: "semana", MESES: "mês" };
+const intervaloTexto = (i) => i ? `a cada ${i.valor} ${i.valor === 1 ? UNIDADES_SINGULAR[i.unidade] : UNIDADES[i.unidade]}` : "";
+// Idade em dias para texto: dias até 60, meses depois
+const idadeDiasTexto = (d) => d === null || d === undefined ? "idade não informada"
+  : d <= 60 ? `${d} ${d === 1 ? "dia" : "dias"}` : `${Math.floor(d / 30)} meses`;
 
 // Data local no formato ISO (yyyy-mm-dd), sem conversão para UTC
 function hojeIso() {
@@ -195,5 +234,6 @@ function sexosTexto(q) {
 
 export {
   api, ApiError, useApi, login, logout, getSessao, onSessao,
+  TIPOS_APLICACAO, UNIDADES, intervaloTexto, idadeDiasTexto,
   TIPOS, tipoInfo, MOTIVOS, FINALIDADES, finalidadesPorTipo, finalidadesTexto, hojeIso, dataBr, idadeDesde, nascimentoLote, sexosTexto,
 };

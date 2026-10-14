@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { api, useApi, login, TIPOS, tipoInfo, MOTIVOS, FINALIDADES, finalidadesPorTipo, finalidadesTexto, hojeIso, dataBr, idadeDesde, nascimentoLote, sexosTexto } from './api.js';
 import { Ico, SpeciesAvatar, PageHeader, StatTile, Sheet, Empty } from './ui.jsx';
+import { SaudeDoLote } from './screens-saude.jsx';
 // VidaNoMato — telas ligadas ao vnm-backend: Login, Animais (lotes), Detalhe do lote, Novo lote
 
 
@@ -145,7 +146,9 @@ function LoginScreen() {
 // ════════════════════════════════════════════
 // ANIMAIS (lotes)
 // ════════════════════════════════════════════
-function AnimaisScreen({ openLote, openAdd }) {
+function AnimaisScreen({ openLote, openAdd, openNascimento, openNascimentosSemLote }) {
+  const [menu, setMenu] = useState(false);
+  const semLote = useApi("nascimentosSemLote:contagem", () => api.nascimentos({ semLote: true }));
   const [tipo, setTipo] = useState("");
   const [q, setQ] = useState("");
   const [encerrados, setEncerrados] = useState(false);
@@ -166,13 +169,39 @@ function AnimaisScreen({ openLote, openAdd }) {
         title="Animais"
         subtitle={resumo.data ? `${totalGeral} animais no sítio` : " "}
         action={
-          <button onClick={openAdd} aria-label="Novo lote" style={{
+          <button onClick={() => setMenu(true)} aria-label="Adicionar" style={{
             width: 40, height: 40, borderRadius: 999,
             background: "var(--ink)", color: "var(--bg)", border: "none",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}><Ico.plus s={20} c="var(--bg)"/></button>
         }
       />
+
+      {semLote.data?.length > 0 && (
+        <div style={{padding: "0 16px 12px"}}>
+          <button onClick={openNascimentosSemLote} className="card" style={{width: "100%", padding: "12px 14px", display: "flex", alignItems: "center", gap: 10, textAlign: "left"}}>
+            <Ico.babies s={18}/>
+            <span style={{flex: 1, fontWeight: 600, fontSize: 14}}>
+              {semLote.data.length === 1 ? "1 nascimento sem lote" : `${semLote.data.length} nascimentos sem lote`}
+            </span>
+            <Ico.chevron c="var(--ink-3)"/>
+          </button>
+        </div>
+      )}
+
+      <Sheet open={menu} onClose={() => setMenu(false)} title="Adicionar">
+        <div style={{display: "flex", flexDirection: "column", gap: 10}}>
+          <button onClick={() => { setMenu(false); openAdd(); }} className="btn btn-primary" style={{width: "100%"}}>
+            <Ico.plus s={16} c="var(--bg)"/> Novo lote
+          </button>
+          <button onClick={() => { setMenu(false); openNascimento(); }} className="btn btn-soft" style={{width: "100%"}}>
+            <Ico.babies s={16}/> Registrar nascimento
+          </button>
+          <button onClick={() => { setMenu(false); openNascimentosSemLote(); }} className="btn btn-ghost" style={{width: "100%"}}>
+            Nascimentos sem lote
+          </button>
+        </div>
+      </Sheet>
 
       {/* Totais por espécie */}
       {tiposNoSitio.length > 0 && <div style={{padding: "4px 16px 14px", display: "flex", gap: 8}}>
@@ -318,7 +347,7 @@ function LoteDetailScreen({ codigo, back, showToast }) {
         <>
           <div style={{padding: "18px 16px 10px", display: "flex", justifyContent: "center"}}>
             <div className="seg">
-              {[{k: "info", l: "Ficha"}, {k: "hist", l: "Histórico"}].map(s => (
+              {[{k: "info", l: "Ficha"}, {k: "hist", l: "Histórico"}, {k: "saude", l: "Saúde"}].map(s => (
                 <button key={s.k} onClick={() => setTab(s.k)} className={tab === s.k ? "on" : ""}>{s.l}</button>
               ))}
             </div>
@@ -362,6 +391,8 @@ function LoteDetailScreen({ codigo, back, showToast }) {
                 )}
               </div>
             )}
+
+            {tab === "saude" && <SaudeDoLote lote={l} showToast={showToast}/>}
 
             {tab === "hist" && (
               movs.erro ? <ErroCarga erro={movs.erro} onRetry={movs.recarregar}/> : (
@@ -733,4 +764,4 @@ function NovoLoteScreen({ back, onCriado }) {
   );
 }
 
-export { LoginScreen, AnimaisScreen, LoteDetailScreen, NovoLoteScreen, Carregando, ErroCarga, ErroForm, ChipsMulti };
+export { LoginScreen, AnimaisScreen, LoteDetailScreen, NovoLoteScreen, Carregando, ErroCarga, ErroForm, Chips, ChipsMulti, QuantidadesForm };
